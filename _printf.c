@@ -1,65 +1,90 @@
 #include "main.h"
-#include <unistd.h> /* for write */
-#include <stdio.h> /* for NULL */
-#include <stdlib.h> /* for va_start, va_arg, va_end */
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 /**
- * _printf - Custom printf function
- * @format: Format string
+ * _printf - produces output according to a format
+ * @format: character string
  *
- * Return: Number of characters printed (excluding null byte)
+ * Return: number of characters printed (excluding null byte)
  */
+
+int _putchar(char c);
+int _puts(char *str);
+int print_number(int n);
+
 int _printf(const char *format, ...)
 {
-	int printed_chars = 0;
 	va_list args;
-	char buffer[2] = {'\0', '\0'};
+	int printed_chars = 0;
+	char *str;
 
 	va_start(args, format);
-
-	if (format == NULL)
-		return (-1);
 
 	while (*format)
 	{
 		if (*format == '%')
 		{
 			format++;
-			if (*format == '\0')
-				return (-1);
-
 			switch (*format)
 			{
 				case 'c':
-					buffer[0] = va_arg(args, int);
-					printed_chars += write(1, buffer, 1);
+					printed_chars += _putchar(va_arg(args, int));
 					break;
 				case 's':
-					buffer[0] = '\0';
-					buffer[0] = *va_arg(args, char *);
-					printed_chars += write(1, buffer, 1);
+					str = va_arg(args, char *);
+					if (!str)
+						str = "(null)";
+					printed_chars += _puts(str);
 					break;
 				case '%':
-					buffer[0] = '%';
-					printed_chars += write(1, buffer, 1);
+					printed_chars += _putchar('%');
+					break;
+				case 'd':
+				case 'i':
+					printed_chars += print_number(va_arg(args, int));
 					break;
 				default:
-					buffer[0] = '%';
-					buffer[1] = *format;
-					printed_chars += write(1, buffer, 2);
+					printed_chars += _putchar('%');
+					printed_chars += _putchar(*format);
 					break;
 			}
 		}
 		else
-		{
-			buffer[0] = *format;
-			printed_chars += write(1, buffer, 1);
-		}
-
+			printed_chars += _putchar(*format);
 		format++;
 	}
-
 	va_end(args);
-
 	return (printed_chars);
 }
+
+/**
+ * print_number - prints an integer
+ * @n: integer to be printed
+ *
+ * Return: number of digits printed
+ */
+int print_number(int n)
+{
+	unsigned int m;
+	int digits = 0;
+
+	if (n < 0)
+	{
+		_putchar('-');
+		m = -n;
+	}
+	else
+		m = n;
+
+	if (m / 10)
+		digits += print_number(m / 10);
+
+	_putchar(m % 10 + '0');
+	digits++;
+
+	return (digits);
+}
+
