@@ -3,7 +3,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <stdarg.h> /* for va_list */
+#include <stdarg.h> /* for va_lists */
 
 /* Function prototypes */
 int _printf(const char *format, ...);
