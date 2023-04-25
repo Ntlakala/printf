@@ -1,19 +1,18 @@
 #include "main.h"
-#include <unistd.h> /* for write */
-#include <stdio.h> /* for NULL */
-#include <stdlib.h> /* for va_start, va_arg, va_end */
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-/**
- * _printf - Custom printf function
- * @format: Format string
- *
- * Return: Number of characters printed (excluding null byte)
- */
+int _putchar(char c);
+int _puts(char *str);
+int print_number(int n);
+
 int _printf(const char *format, ...)
 {
 	int printed_chars = 0;
 	va_list args;
-	char buffer[2] = {'\0', '\0'};
+	char buffer[12]; /* buffer to hold integer as string */
 
 	va_start(args, format);
 
@@ -43,6 +42,11 @@ int _printf(const char *format, ...)
 					buffer[0] = '%';
 					printed_chars += write(1, buffer, 1);
 					break;
+				case 'd':
+				case 'i':
+					sprintf(buffer, "%d", va_arg(args, int));
+					printed_chars += write(1, buffer, strlen(buffer));
+					break;
 				default:
 					buffer[0] = '%';
 					buffer[1] = *format;
@@ -62,19 +66,4 @@ int _printf(const char *format, ...)
 	va_end(args);
 
 	return (printed_chars);
-}
-/** 
-* print_number - prints an integer 
-* @n: integer to be printed *
-* Return: number of digits printed 
-
-*/
-
-int print_number(int n) { unsigned int m; int digits = 0; 
-if (n < 0) { _putchar('-'); m = -n; 
-}
-else m = n; 
-if (m / 10) digits += print_number(m / 10); 
-_putchar(m % 10 + '0'); 
-digits++; return (digits); 
 }
