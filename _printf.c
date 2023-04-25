@@ -4,87 +4,66 @@
 #include <string.h>
 #include <unistd.h>
 
-/**
- * _printf - produces output according to a format
- * @format: character string
- *
- * Return: number of characters printed (excluding null byte)
- */
-
 int _putchar(char c);
 int _puts(char *str);
 int print_number(int n);
 
 int _printf(const char *format, ...)
 {
-	va_list args;
 	int printed_chars = 0;
-	char *str;
+	va_list args;
+	char buffer[12]; /* buffer to hold integer as string */
 
 	va_start(args, format);
+
+	if (format == NULL)
+		return (-1);
 
 	while (*format)
 	{
 		if (*format == '%')
 		{
 			format++;
+			if (*format == '\0')
+				return (-1);
+
 			switch (*format)
 			{
 				case 'c':
-					printed_chars += _putchar(va_arg(args, int));
+					buffer[0] = va_arg(args, int);
+					printed_chars += write(1, buffer, 1);
 					break;
 				case 's':
-					str = va_arg(args, char *);
-					if (!str)
-						str = "(null)";
-					printed_chars += _puts(str);
+					buffer[0] = '\0';
+					buffer[0] = *va_arg(args, char *);
+					printed_chars += write(1, buffer, 1);
 					break;
 				case '%':
-					printed_chars += _putchar('%');
+					buffer[0] = '%';
+					printed_chars += write(1, buffer, 1);
 					break;
 				case 'd':
 				case 'i':
-					printed_chars += print_number(va_arg(args, int));
+					sprintf(buffer, "%d", va_arg(args, int));
+					printed_chars += write(1, buffer, strlen(buffer));
 					break;
 				default:
-					printed_chars += _putchar('%');
-					printed_chars += _putchar(*format);
+					buffer[0] = '%';
+					buffer[1] = *format;
+					printed_chars += write(1, buffer, 2);
 					break;
 			}
 		}
 		else
-			printed_chars += _putchar(*format);
+		{
+			buffer[0] = *format;
+			printed_chars += write(1, buffer, 1);
+		}
+
 		format++;
 	}
+
 	va_end(args);
+
 	return (printed_chars);
 }
-
-/**
- * print_number - prints an integer
- * @n: integer to be printed
- *
- * Return: number of digits printed
- */
-int print_number(int n)
-{
-	unsigned int m;
-	int digits = 0;
-
-	if (n < 0)
-	{
-		_putchar('-');
-		m = -n;
-	}
-	else
-		m = n;
-
-	if (m / 10)
-		digits += print_number(m / 10);
-
-	_putchar(m % 10 + '0');
-	digits++;
-
-	return (digits);
-}
-
