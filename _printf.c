@@ -1,91 +1,65 @@
-/*
-
-main.h - header file to define functions and constants
-*/
-void print_buffer(char buffer[], int *buff_ind); // Function prototype
-
-/**
-
-_printf - Printf function
-
-@format: format.
-
-Return: Printed chars.
-*/
-int _printf(const char format, ...)
-{
-/ Declare and initialize variables */
-int i, printed = 0, printed_chars = 0;
-int flags, width, precision, size, buff_ind = 0;
-va_list list;
-char buffer[BUFF_SIZE];
-
-/* Check if format is NULL and return -1 if it is */
-if (format == NULL)
-return (-1);
-
-/* Start variable argument list */
-va_start(list, format);
-
-/* Loop through the format string /
-for (i = 0; format && format[i] != '\0'; i++)
-{
-/ If the current character is not a %, add it to the buffer and increment buff_ind /
-if (format[i] != '%')
-{
-buffer[buff_ind++] = format[i];
-if (buff_ind == BUFF_SIZE)
-print_buffer(buffer, &buff_ind);
-/ Alternative: write(1, &format[i], 1); /
-printed_chars++;
-}
-/ If the current character is a %, parse the format specifier and handle the argument accordingly /
-else
-{
-/ Flush the buffer before parsing the format specifier /
-print_buffer(buffer, &buff_ind);
-flags = get_flags(format, &i);
-width = get_width(format, &i, list);
-precision = get_precision(format, &i, list);
-size = get_size(format, &i);
-++i;
-printed = handle_print(format, &i, list, buffer,
-flags, width, precision, size);
-/ Return -1 if handle_print returns -1 */
-if (printed == -1)
-return (-1);
-printed_chars += printed;
-}
-}
-
-/* Flush the buffer one last time before returning */
-print_buffer(buffer, &buff_ind);
-
-/* End variable argument list */
-va_end(list);
-
-/* Return the number of printed characters */
-return (printed_chars);
-}
+#include "main.h"
+#include <unistd.h> /* for write */
+#include <stdio.h> /* for NULL */
+#include <stdlib.h> /* for va_start, va_arg, va_end */
 
 /**
-
-print_buffer - Prints the contents of the buffer if it exist
-
-@buffer: Array of chars
-
-@buff_ind: Index at which to add next char, represents the length.
-*/
-void print_buffer(char buffer[], int buff_ind)
+ * _printf - Custom printf function
+ * @format: Format string
+ *
+ * Return: Number of characters printed (excluding null byte)
+ */
+int _printf(const char *format, ...)
 {
-/ If the buffer has any contents, print them to stdout and reset the buffer index */
-if (*buff_ind > 0)
-write(1, &buffer[0], *buff_ind);
+	int printed_chars = 0;
+	va_list args;
+	char buffer[2] = {'\0', '\0'};
 
-*buff_ind = 0;
+	va_start(args, format);
+
+	if (format == NULL)
+		return (-1);
+
+	while (*format)
+	{
+		if (*format == '%')
+		{
+			format++;
+			if (*format == '\0')
+				return (-1);
+
+			switch (*format)
+			{
+				case 'c':
+					buffer[0] = va_arg(args, int);
+					printed_chars += write(1, buffer, 1);
+					break;
+				case 's':
+					buffer[0] = '\0';
+					buffer[0] = *va_arg(args, char *);
+					printed_chars += write(1, buffer, 1);
+					break;
+				case '%':
+					buffer[0] = '%';
+					printed_chars += write(1, buffer, 1);
+					break;
+				default:
+					buffer[0] = '%';
+					buffer[1] = *format;
+					printed_chars += write(1, buffer, 2);
+					break;
+			}
+		}
+		else
+		{
+			buffer[0] = *format;
+			printed_chars += write(1, buffer, 1);
+		}
+
+		format++;
+	}
+
+	va_end(args);
+
+	return (printed_chars);
 }
-
-
-
-
-
